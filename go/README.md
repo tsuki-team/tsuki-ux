@@ -6,7 +6,7 @@ Port of `cli/internal/ui/ui.go`.
 ## Install
 
 ```bash
-go get github.com/tsuki/tsuki-ux/go/tsukiux
+go get github.com/tsuki-team/tsuki-ux/go/tsukiux
 ```
 
 ## API
@@ -14,7 +14,7 @@ go get github.com/tsuki/tsuki-ux/go/tsukiux
 ### Status primitives
 
 ```go
-import "github.com/tsuki/tsuki-ux/go/tsukiux"
+import "github.com/tsuki-team/tsuki-ux/go/tsukiux"
 
 tsukiux.Step("Compilando firmware")     //   ▶  Compilando firmware
 tsukiux.Success("Hecho")               //   ✔  Hecho
