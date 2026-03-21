@@ -1,10 +1,10 @@
 [package]
 name = "tsuki-ux"
-version = "0.1.0"
+version = "1.0.0"
 edition = "2021"
-description = "Terminal UX primitives from the Tsuki project — LiveBlock, Spinner, Box, and more."
+description = "the official tsuki-ux for terminal apps"
 license = "MIT"
-repository = "https://github.com/tsuki/tsuki-ux"
+repository = "https://github.com/tsuki-team/tsuki-ux"
 keywords = ["terminal", "cli", "spinner", "tui", "ansi"]
 categories = ["command-line-interface"]
 
