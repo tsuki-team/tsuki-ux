@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	ui "github.com/tsuki-team/tsuki-ux "
+	ui "github.com/tsuki-team/tsuki-ux"
 )
 
 func main() {
