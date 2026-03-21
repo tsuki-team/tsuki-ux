@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "tsuki-ux"
+version = "0.1.0"
+description = "Terminal UX primitives from the Tsuki project — LiveBlock, Spinner, Box, and more."
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.9"
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/tsuki/tsuki-ux"
+Source   = "https://github.com/tsuki/tsuki-ux/tree/main/python"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["tsuki_ux*"]

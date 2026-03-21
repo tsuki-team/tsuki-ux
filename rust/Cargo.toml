@@ -1,0 +1,20 @@
+[package]
+name = "tsuki-ux"
+version = "0.1.0"
+edition = "2021"
+description = "Terminal UX primitives from the Tsuki project — LiveBlock, Spinner, Box, and more."
+license = "MIT"
+repository = "https://github.com/tsuki/tsuki-ux"
+keywords = ["terminal", "cli", "spinner", "tui", "ansi"]
+categories = ["command-line-interface"]
+
+[dependencies]
+# No external crates — pure stdlib + libc for TTY detection.
+# Optional: enable the "crossterm" feature for richer platform support.
+
+[features]
+default = []
+
+[[example]]
+name = "demo"
+path = "examples/demo.rs"

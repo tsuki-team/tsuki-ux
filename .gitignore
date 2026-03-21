@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+
+# Go
+go/vendor/
+go/bin/
+
+# Rust
+rust/target/
+
+# General
+.DS_Store
+*.swp
+*.swo
+*.zip
