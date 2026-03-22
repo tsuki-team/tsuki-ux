@@ -1,6 +1,6 @@
 [package]
 name = "tsuki-ux"
-version = "1.0.9"
+version = "1.0.10"
 edition = "2021"
 description = "the official tsuki-ux for terminal apps"
 license = "MIT"
