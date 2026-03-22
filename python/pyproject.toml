@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "tsuki-ux"
-version = "1.0.0"
+version = "1.0.4"
 description = "the official tsuki-ux for terminal apps"
 readme = "README.md"
 license = { text = "MIT" }
