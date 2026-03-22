@@ -6,12 +6,8 @@ use std::sync::OnceLock;
 static UNICODE: OnceLock<bool> = OnceLock::new();
 
 fn supports_unicode() -> bool {
-    // On Unix/macOS the locale encoding is almost always UTF-8.
-    // On Windows we'd check the code page; we assume UTF-8 here
-    // (Windows Terminal / modern PowerShell default to UTF-8).
     #[cfg(windows)]
     {
-        // Try to read the active code page via GetConsoleOutputCP.
         #[link(name = "kernel32")]
         extern "system" {
             fn GetConsoleOutputCP() -> u32;
@@ -20,7 +16,6 @@ fn supports_unicode() -> bool {
     }
     #[cfg(not(windows))]
     {
-        // Check LANG / LC_ALL / LC_CTYPE env vars.
         for var in &["LC_ALL", "LC_CTYPE", "LANG"] {
             if let Ok(v) = std::env::var(var) {
                 let v = v.to_lowercase();
@@ -29,7 +24,6 @@ fn supports_unicode() -> bool {
                 }
             }
         }
-        // Default true on Linux/macOS — modern systems are always UTF-8.
         true
     }
 }
@@ -50,6 +44,9 @@ pub fn sym_bullet() -> &'static str { if unicode_enabled() { "•" } else { "-" 
 pub fn sym_pipe()   -> &'static str { if unicode_enabled() { "│" } else { "|" } }
 pub fn sym_ell()    -> &'static str { if unicode_enabled() { "…" } else { "..." } }
 pub fn sym_ptr()    -> &'static str { if unicode_enabled() { "❱" } else { ">" } }
+pub fn sym_arrow()  -> &'static str { if unicode_enabled() { "→" } else { "->" } }
+pub fn sym_check()  -> &'static str { if unicode_enabled() { "✓" } else { "v" } }
+pub fn sym_cross()  -> &'static str { if unicode_enabled() { "✗" } else { "x" } }
 
 pub fn box_tl() -> &'static str { if unicode_enabled() { "╭" } else { "+" } }
 pub fn box_tr() -> &'static str { if unicode_enabled() { "╮" } else { "+" } }
@@ -58,11 +55,127 @@ pub fn box_br() -> &'static str { if unicode_enabled() { "╯" } else { "+" } }
 pub fn box_h()  -> &'static str { if unicode_enabled() { "─" } else { "-" } }
 pub fn box_v()  -> &'static str { if unicode_enabled() { "│" } else { "|" } }
 
-/// Braille spinner frames — matches ui.go and build.py exactly.
+// ── Spinner frame sets ────────────────────────────────────────────────────────
+
+/// Default braille spinner — matches ui.go and build.py exactly.
 pub fn spinner_frames() -> &'static [&'static str] {
     if unicode_enabled() {
         &["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]
     } else {
         &["-", "\\", "|", "/"]
+    }
+}
+
+/// Heavy braille dots.
+pub fn spinner_frames_dots() -> &'static [&'static str] {
+    if unicode_enabled() {
+        &["⣾", "⣽", "⣻", "⢿", "⡿", "⣟", "⣯", "⣷"]
+    } else {
+        &[".", "o", "O", "o"]
+    }
+}
+
+/// Minimal ASCII line spinner.
+pub fn spinner_frames_line() -> &'static [&'static str] {
+    &["-", "\\", "|", "/"]
+}
+
+/// Animated arrow bar.
+pub fn spinner_frames_arrow() -> &'static [&'static str] {
+    if unicode_enabled() {
+        &["▹▹▹▹▹", "▸▹▹▹▹", "▹▸▹▹▹", "▹▹▸▹▹", "▹▹▹▸▹", "▹▹▹▹▸"]
+    } else {
+        &[">    ", " >   ", "  >  ", "   > ", "    >"]
+    }
+}
+
+/// Moon phases.
+pub fn spinner_frames_moon() -> &'static [&'static str] {
+    if unicode_enabled() {
+        &["🌑", "🌒", "🌓", "🌔", "🌕", "🌖", "🌗", "🌘"]
+    } else {
+        &["-", "\\", "|", "/"]
+    }
+}
+
+/// Clock faces.
+pub fn spinner_frames_clock() -> &'static [&'static str] {
+    if unicode_enabled() {
+        &["🕛", "🕐", "🕑", "🕒", "🕓", "🕔", "🕕", "🕖", "🕗", "🕘", "🕙", "🕚"]
+    } else {
+        &["-", "\\", "|", "/"]
+    }
+}
+
+/// Bouncing ball on a track.
+pub fn spinner_frames_bounce() -> &'static [&'static str] {
+    if unicode_enabled() {
+        &[
+            "[●    ]", "[●    ]", "[ ●   ]", "[  ●  ]", "[   ● ]", "[    ●]",
+            "[    ●]", "[   ● ]", "[  ●  ]", "[ ●   ]",
+        ]
+    } else {
+        &["[o    ]", "[ o   ]", "[  o  ]", "[   o ]", "[    o]", "[   o ]", "[  o  ]", "[ o   ]"]
+    }
+}
+
+/// Growing / shrinking block pulse.
+pub fn spinner_frames_pulse() -> &'static [&'static str] {
+    if unicode_enabled() {
+        &["▏", "▎", "▍", "▌", "▋", "▊", "▉", "█", "▉", "▊", "▋", "▌", "▍", "▎"]
+    } else {
+        &[".", "o", "O", "0", "O", "o"]
+    }
+}
+
+/// Snake-like filling bar.
+pub fn spinner_frames_snake() -> &'static [&'static str] {
+    if unicode_enabled() {
+        &[
+            "⣀⣀⣀⣀⣀", "⣄⣀⣀⣀⣀", "⣤⣀⣀⣀⣀", "⣦⣄⣀⣀⣀",
+            "⣶⣤⣄⣀⣀", "⣷⣦⣤⣄⣀", "⣿⣶⣦⣤⣄", "⣿⣿⣶⣦⣤",
+            "⣿⣿⣿⣶⣦", "⣿⣿⣿⣿⣶", "⣿⣿⣿⣿⣿", "⣿⣿⣿⣿⣶",
+            "⣿⣿⣿⣶⣦", "⣿⣿⣶⣦⣤", "⣿⣶⣦⣤⣄", "⣶⣦⣤⣄⣀",
+            "⣦⣤⣄⣀⣀", "⣤⣀⣀⣀⣀", "⣄⣀⣀⣀⣀",
+        ]
+    } else {
+        &[".....", "o....", "oo...", "ooo..", "oooo.", "ooooo", ".oooo", "..ooo", "...oo", "....o"]
+    }
+}
+
+/// Small pixel grid cycling.
+pub fn spinner_frames_pixel() -> &'static [&'static str] {
+    if unicode_enabled() {
+        &["⣿⣿", "⣷⣿", "⣯⣿", "⣟⣿", "⡿⣿", "⢿⣿", "⣻⣿", "⣽⣿", "⣾⣿", "⣿⣾", "⣿⣽", "⣿⣻"]
+    } else {
+        &["..", "o.", "oo", ".o"]
+    }
+}
+
+/// Blinking block toggle.
+pub fn spinner_frames_toggle() -> &'static [&'static str] {
+    if unicode_enabled() {
+        &["▪▫▫▫▫", "▫▪▫▫▫", "▫▫▪▫▫", "▫▫▫▪▫", "▫▫▫▫▪", "▫▫▫▪▫", "▫▫▪▫▫", "▫▪▫▫▫"]
+    } else {
+        &["*----", "-*---", "--*--", "---*-", "----*", "---*-", "--*--", "-*---"]
+    }
+}
+
+/// Expanding / contracting progress bar.
+pub fn spinner_frames_grow() -> &'static [&'static str] {
+    if unicode_enabled() {
+        &[
+            "▰▱▱▱▱▱▱▱", "▰▰▱▱▱▱▱▱", "▰▰▰▱▱▱▱▱", "▰▰▰▰▱▱▱▱",
+            "▰▰▰▰▰▱▱▱", "▰▰▰▰▰▰▱▱", "▰▰▰▰▰▰▰▱", "▰▰▰▰▰▰▰▰",
+            "▱▰▰▰▰▰▰▰", "▱▱▰▰▰▰▰▰", "▱▱▱▰▰▰▰▰", "▱▱▱▱▰▰▰▰",
+            "▱▱▱▱▱▰▰▰", "▱▱▱▱▱▱▰▰", "▱▱▱▱▱▱▱▰",
+        ]
+    } else {
+        &[
+            "=       ", "==      ", "===     ", "====    ",
+            "=====   ", "======  ", "======= ", "========",
+            " =======", "  ======", "   =====", "    ====",
+            "     ===", "      ==", "       =",
+        ]
     }
 }

@@ -37,6 +37,11 @@ if UNICODE:
     SYM_PIPE   = "│"
     SYM_ELL    = "…"
     SYM_ARROW  = "→"
+    SYM_DASH   = "–"
+    SYM_DOT    = "·"
+    SYM_CHECK  = "✓"
+    SYM_CROSS  = "✗"
+    SYM_PTR    = "❱"
 
     # Box-drawing
     BOX_TL = "╭"
@@ -46,11 +51,60 @@ if UNICODE:
     BOX_H  = "─"
     BOX_V  = "│"
 
-    # Traceback pointer
-    SYM_PTR = "❱"
+    # ── Spinner frame sets ────────────────────────────────────────────────────
 
-    # Braille spinner frames (matches ui.go and build.py exactly)
+    # Default braille (matches ui.go and build.py exactly)
     SPINNER_FRAMES = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]
+
+    # Heavy braille dots
+    SPINNER_FRAMES_DOTS = ["⣾", "⣽", "⣻", "⢿", "⡿", "⣟", "⣯", "⣷"]
+
+    # Minimal ASCII
+    SPINNER_FRAMES_LINE = ["-", "\\", "|", "/"]
+
+    # Animated arrow bar
+    SPINNER_FRAMES_ARROW = ["▹▹▹▹▹", "▸▹▹▹▹", "▹▸▹▹▹", "▹▹▸▹▹", "▹▹▹▸▹", "▹▹▹▹▸"]
+
+    # Moon phases
+    SPINNER_FRAMES_MOON = ["🌑", "🌒", "🌓", "🌔", "🌕", "🌖", "🌗", "🌘"]
+
+    # Clock faces
+    SPINNER_FRAMES_CLOCK = ["🕛", "🕐", "🕑", "🕒", "🕓", "🕔", "🕕", "🕖", "🕗", "🕘", "🕙", "🕚"]
+
+    # Bouncing ball on a track
+    SPINNER_FRAMES_BOUNCE = [
+        "[●    ]", "[●    ]", "[ ●   ]", "[  ●  ]", "[   ● ]", "[    ●]",
+        "[    ●]", "[   ● ]", "[  ●  ]", "[ ●   ]",
+    ]
+
+    # Growing / shrinking block pulse
+    SPINNER_FRAMES_PULSE = ["▏", "▎", "▍", "▌", "▋", "▊", "▉", "█", "▉", "▊", "▋", "▌", "▍", "▎"]
+
+    # Snake-like filling bar
+    SPINNER_FRAMES_SNAKE = [
+        "⣀⣀⣀⣀⣀", "⣄⣀⣀⣀⣀", "⣤⣀⣀⣀⣀", "⣦⣄⣀⣀⣀",
+        "⣶⣤⣄⣀⣀", "⣷⣦⣤⣄⣀", "⣿⣶⣦⣤⣄", "⣿⣿⣶⣦⣤",
+        "⣿⣿⣿⣶⣦", "⣿⣿⣿⣿⣶", "⣿⣿⣿⣿⣿", "⣿⣿⣿⣿⣶",
+        "⣿⣿⣿⣶⣦", "⣿⣿⣶⣦⣤", "⣿⣶⣦⣤⣄", "⣶⣦⣤⣄⣀",
+        "⣦⣤⣄⣀⣀", "⣤⣀⣀⣀⣀", "⣄⣀⣀⣀⣀",
+    ]
+
+    # Small pixel grid cycling
+    SPINNER_FRAMES_PIXEL = [
+        "⣿⣿", "⣷⣿", "⣯⣿", "⣟⣿", "⡿⣿", "⢿⣿",
+        "⣻⣿", "⣽⣿", "⣾⣿", "⣿⣾", "⣿⣽", "⣿⣻",
+    ]
+
+    # Blinking block toggle
+    SPINNER_FRAMES_TOGGLE = ["▪▫▫▫▫", "▫▪▫▫▫", "▫▫▪▫▫", "▫▫▫▪▫", "▫▫▫▫▪", "▫▫▫▪▫", "▫▫▪▫▫", "▫▪▫▫▫"]
+
+    # Expanding / contracting progress bar
+    SPINNER_FRAMES_GROW = [
+        "▰▱▱▱▱▱▱▱", "▰▰▱▱▱▱▱▱", "▰▰▰▱▱▱▱▱", "▰▰▰▰▱▱▱▱",
+        "▰▰▰▰▰▱▱▱", "▰▰▰▰▰▰▱▱", "▰▰▰▰▰▰▰▱", "▰▰▰▰▰▰▰▰",
+        "▱▰▰▰▰▰▰▰", "▱▱▰▰▰▰▰▰", "▱▱▱▰▰▰▰▰", "▱▱▱▱▰▰▰▰",
+        "▱▱▱▱▱▰▰▰", "▱▱▱▱▱▱▰▰", "▱▱▱▱▱▱▱▰",
+    ]
 
 else:
     # Pure ASCII fallback
@@ -63,6 +117,11 @@ else:
     SYM_PIPE   = "|"
     SYM_ELL    = "..."
     SYM_ARROW  = "->"
+    SYM_DASH   = "-"
+    SYM_DOT    = "."
+    SYM_CHECK  = "v"
+    SYM_CROSS  = "x"
+    SYM_PTR    = ">"
 
     BOX_TL = "+"
     BOX_TR = "+"
@@ -71,6 +130,15 @@ else:
     BOX_H  = "-"
     BOX_V  = "|"
 
-    SYM_PTR = ">"
-
-    SPINNER_FRAMES = ["-", "\\", "|", "/"]
+    SPINNER_FRAMES        = ["-", "\\", "|", "/"]
+    SPINNER_FRAMES_DOTS   = [".", "o", "O", "o"]
+    SPINNER_FRAMES_LINE   = ["-", "\\", "|", "/"]
+    SPINNER_FRAMES_ARROW  = [">    ", " >   ", "  >  ", "   > ", "    >"]
+    SPINNER_FRAMES_MOON   = ["-", "\\", "|", "/"]
+    SPINNER_FRAMES_CLOCK  = ["-", "\\", "|", "/"]
+    SPINNER_FRAMES_BOUNCE = ["[o    ]", "[ o   ]", "[  o  ]", "[   o ]", "[    o]", "[   o ]", "[  o  ]", "[ o   ]"]
+    SPINNER_FRAMES_PULSE  = [".", "o", "O", "0", "O", "o"]
+    SPINNER_FRAMES_SNAKE  = [".....", "o....", "oo...", "ooo..", "oooo.", "ooooo", ".oooo", "..ooo", "...oo", "....o"]
+    SPINNER_FRAMES_PIXEL  = ["..", "o.", "oo", ".o"]
+    SPINNER_FRAMES_TOGGLE = ["*----", "-*---", "--*--", "---*-", "----*", "---*-", "--*--", "-*---"]
+    SPINNER_FRAMES_GROW   = ["=       ", "==      ", "===     ", "====    ", "=====   ", "======  ", "======= ", "========", " =======", "  ======", "   =====", "    ====", "     ===", "      ==", "       ="]

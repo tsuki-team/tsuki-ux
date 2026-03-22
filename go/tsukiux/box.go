@@ -31,7 +31,7 @@ func Box(title, content string) {
 	}
 
 	for _, line := range strings.Split(content, "\n") {
-		pad := inner - len(StripANSI(line)) - 1
+		pad := inner - visibleLen(line) - 1
 		if pad < 0 {
 			pad = 0
 		}
@@ -78,7 +78,7 @@ func PrintConfig(title string, entries []ConfigEntry, raw bool) {
 	rows := make([]row, 0, len(entries))
 	for _, e := range entries {
 		keyStr := paint(cKey, fmt.Sprintf("%-*s", keyWidth, e.Key))
-		sep := a(dim) + "  =  " + a(reset)
+		sep := a(ansiDim) + "  =  " + a(ansiReset)
 		valStr := fmtConfigValue(e.Value)
 		rich := keyStr + sep + valStr
 		plain := fmt.Sprintf("%-*s  =  %v", keyWidth, e.Key, e.Value)
@@ -150,6 +150,237 @@ func fmtConfigValue(v interface{}) string {
 	}
 }
 
+// ── Table ─────────────────────────────────────────────────────────────────────
+
+// TableColumn defines one column in a Table.
+type TableColumn struct {
+	Header string
+	// Align: "left" (default) | "right" | "center"
+	Align string
+}
+
+// Table renders a bordered table with a header row and data rows.
+//
+//	╭── title ─────────────────────────────────────────────────╮
+//	│  Board          MCU          Port           Baud          │
+//	│  ───────────    ─────────    ──────────     ──────────    │
+//	│  arduino-nano   ATmega328P   /dev/ttyUSB0   115200        │
+//	╰──────────────────────────────────────────────────────────╯
+func Table(title string, cols []TableColumn, rows [][]string) {
+	// Compute column widths
+	widths := make([]int, len(cols))
+	for i, c := range cols {
+		widths[i] = len([]rune(c.Header))
+	}
+	for _, row := range rows {
+		for i, cell := range row {
+			if i < len(widths) {
+				if l := visibleLen(cell); l > widths[i] {
+					widths[i] = l
+				}
+			}
+		}
+	}
+
+	// Measure plain header for inner width
+	headerPlainLen := 0
+	for i, w := range widths {
+		headerPlainLen += w
+		if i < len(widths)-1 {
+			headerPlainLen += 3
+		}
+	}
+
+	w := TermWidth()
+	inner := w - 2
+	minInner := headerPlainLen + 4
+	if len(title)+6 > minInner {
+		minInner = len(title) + 6
+	}
+	if minInner > inner {
+		inner = minInner
+	}
+
+	// Top border
+	if title != "" {
+		ts := " " + title + " "
+		padR := inner - len(ts) - 2
+		if padR < 0 {
+			padR = 0
+		}
+		fmt.Printf("%s%s%s\n",
+			paint(cTBBorder, BoxTL+BoxH+BoxH),
+			paint(cTitle, ts),
+			paint(cTBBorder, hline(padR)+BoxTR))
+	} else {
+		fmt.Printf("%s\n", paint(cTBBorder, BoxTL+hline(inner)+BoxTR))
+	}
+
+	printRow := func(cells []string, headerStyle bool) {
+		var rich strings.Builder
+		var plainLen int
+		for i := range cols {
+			var cell string
+			if i < len(cells) {
+				cell = cells[i]
+			}
+			plain := StripANSI(cell)
+			pad := widths[i] - len([]rune(plain))
+			if pad < 0 {
+				pad = 0
+			}
+			align := "left"
+			if i < len(cols) {
+				align = cols[i].Align
+			}
+			switch align {
+			case "right":
+				rich.WriteString(strings.Repeat(" ", pad))
+				if headerStyle {
+					rich.WriteString(paint(cTitle, cell))
+				} else {
+					rich.WriteString(cell)
+				}
+			case "center":
+				lp := pad / 2
+				rp := pad - lp
+				rich.WriteString(strings.Repeat(" ", lp))
+				if headerStyle {
+					rich.WriteString(paint(cTitle, cell))
+				} else {
+					rich.WriteString(cell)
+				}
+				rich.WriteString(strings.Repeat(" ", rp))
+			default:
+				if headerStyle {
+					rich.WriteString(paint(cTitle, cell))
+				} else {
+					rich.WriteString(cell)
+				}
+				rich.WriteString(strings.Repeat(" ", pad))
+			}
+			plainLen += widths[i]
+			if i < len(cols)-1 {
+				rich.WriteString("   ")
+				plainLen += 3
+			}
+		}
+		pad := inner - plainLen - 1
+		if pad < 0 {
+			pad = 0
+		}
+		fmt.Printf("%s %s%s %s\n",
+			paint(cTBBorder, BoxV),
+			rich.String(), strings.Repeat(" ", pad),
+			paint(cTBBorder, BoxV))
+	}
+
+	// Header row
+	headers := make([]string, len(cols))
+	for i, c := range cols {
+		headers[i] = c.Header
+	}
+	printRow(headers, true)
+
+	// Separator line under header
+	sep := make([]string, len(cols))
+	for i := range cols {
+		sep[i] = paint(cMuted, strings.Repeat(BoxH, widths[i]))
+	}
+	printRow(sep, false)
+
+	// Data rows — alternate dim on even rows for readability
+	for ri, row := range rows {
+		styled := make([]string, len(row))
+		for i, cell := range row {
+			if ri%2 == 1 {
+				styled[i] = a(ansiDim) + cell + a(ansiReset)
+			} else {
+				styled[i] = cell
+			}
+		}
+		printRow(styled, false)
+	}
+
+	// Bottom border
+	fmt.Printf("%s\n", paint(cTBBorder, BoxBL+hline(inner)+BoxBR))
+}
+
+// ── DiffLine ──────────────────────────────────────────────────────────────────
+
+// DiffLineKind classifies a diff line.
+type DiffLineKind int
+
+const (
+	DiffContext DiffLineKind = iota // unchanged context line
+	DiffAdded                       // + added line
+	DiffRemoved                     // - removed line
+)
+
+// DiffLine is one line in a diff view.
+type DiffLine struct {
+	Kind DiffLineKind
+	Text string
+}
+
+// DiffView renders a compact unified-diff-style block.
+//
+//	╭── path/to/file.go ─────────────────────────────────────╮
+//	│    10  │  import "fmt"                                  │
+//	│  - 11  │  func old() {}                                 │
+//	│  + 11  │  func new() {}                                 │
+//	╰────────────────────────────────────────────────────────╯
+func DiffView(title string, startLine int, lines []DiffLine) {
+	w := TermWidth()
+	inner := w - 2
+
+	// Top border
+	ts := " " + title + " "
+	padR := inner - len(ts) - 2
+	if padR < 0 {
+		padR = 0
+	}
+	fmt.Printf("%s%s%s\n",
+		paint(cTBBorder, BoxTL+BoxH+BoxH),
+		paint(cTBFile, ts),
+		paint(cTBBorder, hline(padR)+BoxTR))
+
+	lineNo := startLine
+	sep := paint(cTBBorder, " "+BoxV+" ")
+	for _, dl := range lines {
+		var prefix, numStr, textColored string
+		num := fmt.Sprintf("%4d", lineNo)
+		switch dl.Kind {
+		case DiffAdded:
+			prefix = paint(cSuccess, "  + ")
+			numStr = paint(cSuccess, num)
+			textColored = paint(cSuccess, dl.Text)
+			lineNo++
+		case DiffRemoved:
+			prefix = paint(cError, "  - ")
+			numStr = paint(cError, num)
+			textColored = paint(cMuted, dl.Text)
+			// don't advance lineNo on removed
+		default:
+			prefix = "    "
+			numStr = paint(cMuted, num)
+			textColored = paint(cTBCode, dl.Text)
+			lineNo++
+		}
+		content := prefix + numStr + sep + textColored
+		pad := inner - visibleLen(StripANSI(prefix)+StripANSI(num)+" │ "+dl.Text) - 1
+		if pad < 0 {
+			pad = 0
+		}
+		fmt.Printf("%s%s%s %s\n",
+			paint(cTBBorder, BoxV),
+			content, strings.Repeat(" ", pad),
+			paint(cTBBorder, BoxV))
+	}
+
+	fmt.Printf("%s\n", paint(cTBBorder, BoxBL+hline(inner)+BoxBR))
+}
+
 // ── Rich traceback ─────────────────────────────────────────────────────────────
 
 // Frame represents one stack frame in a traceback.
@@ -174,7 +405,7 @@ func Traceback(errType, errMsg string, frames []Frame) {
 	inner := w - 2
 
 	emit := func(text string) {
-		pad := inner - len(StripANSI(text)) - 1
+		pad := inner - visibleLen(text) - 1
 		if pad < 0 {
 			pad = 0
 		}
